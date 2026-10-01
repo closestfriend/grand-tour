@@ -20,11 +20,11 @@ It's written to you, as the person who built the thing. It isn't a code review. 
 | **`print`** | A 14–18 page field guide and workbook to take somewhere with a pen. The guide, eight exercises with two-draft writing space and a printed self-check, and an answer key behind a fold-under stop page that gives the *ingredients* of a good answer, never a paragraph to memorize. |
 | **`grade`** | Photograph your filled workbook pages and bring them back. It reads your handwriting, grades your second drafts, checks the stamps you gave yourself, and builds a talking-points card from **your** sentences wherever they passed. |
 
-[`examples/replicate-predictions-downloader.pdf`](examples/replicate-predictions-downloader.pdf) is a complete print booklet for [replicate-predictions-downloader](https://github.com/closestfriend/replicate-predictions-downloader).
+Live and print share one design, a grayscale field guide with a serif you can read for an hour, so a tour on screen and a booklet on paper are recognisably the same thing. For [replicate-predictions-downloader](https://github.com/closestfriend/replicate-predictions-downloader) there's a complete [live tour page](examples/replicate-predictions-downloader-tour.html) and a complete [print booklet](examples/replicate-predictions-downloader.pdf).
 
 ## Install
 
-The skill is this whole folder: `SKILL.md` plus `assets/` (the print style and its fonts) and `examples/` (the reference booklet the print mode copies its markup from).
+The skill is this whole folder: `SKILL.md` plus `assets/` (the field-guide style and its fonts) and `examples/` (the reference pages both modes copy their markup from). If only `SKILL.md` gets installed somewhere, the skill fetches the rest from this repo.
 
 - **Claude Code:** clone or copy this folder to `~/.claude/skills/grand-tour/`.
 - **Claude apps:** zip this folder and upload it as a custom skill in Claude's settings.
@@ -37,7 +37,7 @@ grand-tour print
 grand-tour grade        (with photos of your filled pages attached)
 ```
 
-Print mode renders the booklet with headless Chromium (Playwright works), and uses `pdftotext` and `pdftoppm` (from Poppler) to fill in page references and check the layout.
+Live mode needs nothing extra: the page is one HTML file with the fonts embedded. Print mode renders the booklet with headless Chromium (Playwright works), and uses `pdftotext` and `pdftoppm` (from Poppler) to fill in page references and check the layout.
 
 ## How it fits with explain-diff
 
@@ -49,12 +49,13 @@ The two quiz differently on purpose. explain-diff checks that you understood a c
 
 ```
 SKILL.md                      the skill
-assets/field-guide/           print style: brand book, stylesheet, fonts
-  README.md                   voice, layout, components, print mechanics
-  components/fonts.css        @font-face for the three bundled families
-  components/bundle.css       the stylesheet
+assets/field-guide/           the style both modes use: brand book, stylesheet, fonts
+  README.md                   voice, layout, components, screen and print mechanics
+  components/fonts.css        @font-face for the three bundled families (booklets)
+  components/fonts-inline.css the same fonts, subset and embedded (single-file tour pages)
+  components/bundle.css       the stylesheet, with print and screen layers
   fonts/                      Charter, TeX Gyre Heros Cn, DejaVu Sans Mono (+ LICENSES.md)
-examples/                     a finished booklet (PDF and its HTML) and the preview image
+examples/                     a finished live tour page, a finished booklet (PDF and HTML), the preview image
 ```
 
 ## License

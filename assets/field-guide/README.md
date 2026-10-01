@@ -48,6 +48,17 @@ Charter here is converted from Bitstream's Type 1 release, so it covers Latin-1 
 
 Target is 14–16 pages, up to 18 when Loose Ends needs the room. When it runs long, trim prose or pair sections. Never cut the writing lines or a protected Loose End (security, confirmed correctness bug).
 
+## On screen (the live tour)
+
+The live tour uses the same stylesheet as one scrolling page. `bundle.css` has a screen layer: a centred reading column scaled up for screens, sections that flow instead of breaking pages, a single-column layout under 640px, and a map that scrolls sideways on phones instead of shrinking past legibility.
+
+- Embed the fonts by pasting `components/fonts-inline.css` (subset WOFF2 as data URIs, about 130 KB) into the page's `<style>` before `bundle.css`, so the tour stays one self-contained file. Booklets keep linking `fonts.css`.
+- The page opens with `header.tour-head`: a `.kicker`, the repo name as `h1`, an italic `.sub` with the metaphor, a `.lede`, and an `ol.toc` whose items are anchor links (no page numbers). Each stop is a `section.sec` with an `id`.
+- Beginner background goes in `details.newbie > summary`. Wide tables go in `div.scroll`.
+- Paper-only pieces don't belong on screen: the cover, writing lines, exercises, the stop page, the passport. The scavenger hunt happens in chat.
+- Paper white only. A dark theme would undo the point of the style.
+- `../../examples/replicate-predictions-downloader-tour.html` is a complete live tour page.
+
 ## Print mechanics (not expressible in CSS)
 
 - **Render with Chromium** (`page.pdf(print_background=True, prefer_css_page_size=True)`), because paged-media margin boxes need it.
