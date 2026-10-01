@@ -81,17 +81,18 @@ Explain jargon inline at first use throughout.
 
 ### Style
 
+- **The page uses the field-guide style**, the same one as the print booklet, so a tour and a booklet look like the same object. It lives in this skill's `assets/field-guide/` (if that folder isn't beside this file, clone https://github.com/closestfriend/grand-tour and use its copy). Read `assets/field-guide/README.md` first. Put the contents of `components/fonts-inline.css` and then `components/bundle.css` in the page's `<style>` (the fonts are embedded there, so the page stays one file), and use its classes: `class="fg-doc"` on `<body>`, a `header.tour-head` with the kicker, the repo name as `h1`, an italic `.sub` naming the metaphor, a `.lede` and an `ol.toc` of anchor links, then one `section.sec` per stop with an `h2` and its `span.no`. Wrap tables in `div.scroll`. Don't restyle it, don't add a dark theme, and leave out the paper-only pieces (writing lines, the stop page, the passport).
 - Write with the clarity and flow of Martin Kleppmann, in classic style. Transitions between stops should feel like walking from one room to the next.
 - Humor lives in the prose and the metaphor. Labels, code, diagrams, and file paths stay literal.
-- Put a collapsible "new to this? start here" callout at the top of any stop whose beginner background can be skipped.
+- Put a collapsible "new to this? start here" callout (`details.newbie` with a `summary`) at the top of any stop whose beginner background can be skipped.
 - Use callouts for key concepts, invariants, and "this surprised me" moments.
-- No ASCII diagrams. Use HTML/CSS diagrams with example data on the arrows.
-- For code blocks, use `<pre><code>`, with `white-space: pre` or `pre-wrap` confirmed in the CSS before saving.
-- Make it responsive enough to read on a phone. Do not use tabs for top-level structure.
+- No ASCII diagrams. Draw the Map as one inline SVG following the field guide's map conventions, with example data on the arrows.
+- For code blocks, use `<pre><code>` (the stylesheet already sets `pre-wrap`).
+- Check it at desktop and phone widths before handing it over: no sideways scroll on the page itself (the map and wide tables scroll inside their own boxes). Do not use tabs for top-level structure.
 
 ### Output
 
-- A single self-contained HTML file (inline CSS/JS, no CDNs), saved **outside the repo** at `~/tours/YYYY-MM-DD-tour-<project-slug>.html` (create the folder if needed). If you're running somewhere that publishes artifacts, you can publish there instead.
+- A single self-contained HTML file (inline CSS and fonts, no CDNs), saved **outside the repo** at `~/tours/YYYY-MM-DD-tour-<project-slug>.html` (create the folder if needed). If you're running somewhere that publishes artifacts, you can publish there instead.
 - Hand back the path or link with two sentences at most on what you inspected and what you skipped.
 
 ## Phase 4: The Scavenger Hunt (in chat, after the page)
@@ -166,7 +167,7 @@ The scoring rule is to stamp the passport only if Draft 2 hits every must-hit po
 
 ### Print constraints
 
-**Build with the bundled field-guide style** in this skill's `assets/field-guide/` folder, so every booklet looks like the same object whatever the repo. Before writing a page, read `assets/field-guide/README.md`, which is the brand book, the component markup and the print mechanics. `examples/replicate-predictions-downloader.html` is a complete booklet in that markup. Copy `assets/field-guide/` (its `components/` and `fonts/` stay siblings) next to the booklet's HTML, link `components/fonts.css`, then `components/bundle.css`, and use its classes. Don't restyle it; override only the `@page` running head (repo name, print date).
+**Build with the bundled field-guide style** in this skill's `assets/field-guide/` folder (if it isn't beside this file, clone https://github.com/closestfriend/grand-tour and use its copy), so every booklet looks like the same object whatever the repo. Before writing a page, read `assets/field-guide/README.md`, which is the brand book, the component markup and the print mechanics. `examples/replicate-predictions-downloader.html` is a complete booklet in that markup. Copy `assets/field-guide/` (its `components/` and `fonts/` stay siblings) next to the booklet's HTML, link `components/fonts.css`, then `components/bundle.css`, and use its classes. Don't restyle it; override only the `@page` running head (repo name, print date).
 
 - Render with Chromium (`page.pdf`, backgrounds on) and save outside the repo at `~/tours/YYYY-MM-DD-fieldguide-<slug>.(html|pdf)`.
 - **Paper travels, so be careful what goes on it.** Never print secret values (Rule zero applies twice over). Describe security issues by file and category, never as a walkthrough of how to exploit them.

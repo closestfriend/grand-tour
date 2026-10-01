@@ -135,3 +135,45 @@ td { border-bottom: .5pt solid var(--rule-hair, #c8c8c8); padding: 3.5pt 6pt 3.5
 
 /* component base when rendered outside a booklet (previews) */
 .fg-scope { color: var(--ink, #111111); font: 10.4pt/1.42 var(--font-body, "Charter", "Bitstream Charter", Georgia, serif); }
+
+/* ---------------------------------------------------------------------------
+   Screen layer: the live tour. Same type, rules and components as the booklet,
+   as one scrolling column. Paper-only pieces (page breaks, running heads,
+   writing lines, the stop page) don't belong on a screen page; don't use them there.
+   --------------------------------------------------------------------------- */
+details.newbie { border-left: 1.2pt dashed var(--ink, #111111); padding: 3pt 0 3pt 10pt; margin: .1in 0 .12in; }
+details.newbie > summary { cursor: pointer; font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 7.6pt; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted, #555555); list-style: none; }
+details.newbie > summary::-webkit-details-marker { display: none; }
+details.newbie > summary::before { content: "+ "; }
+details.newbie[open] > summary::before { content: "− "; }
+details.newbie[open] > summary { margin-bottom: 4pt; }
+.scroll { overflow-x: auto; }
+.scroll > table { min-width: 5.4in; }
+.tour-head .kicker { display: block; margin-bottom: 6pt; }
+.tour-head h1 { font-size: 34pt; line-height: 1; letter-spacing: -.01em; margin: 0 0 .12in; overflow-wrap: anywhere; }
+.tour-head .sub { font: italic 12.5pt/1.4 var(--font-body, "Charter", "Bitstream Charter", Georgia, serif); color: var(--ink-2, #222222); margin-bottom: .16in; }
+.tour-head { border-top: 2.2pt solid var(--ink, #111111); padding-top: 8pt; margin-bottom: .3in; }
+.toc a { color: inherit; text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+
+@media screen {
+  html { background: var(--paper, #ffffff); }
+  .fg-doc { max-width: 6.1in; margin: 0 auto; padding: 28px 16px 96px; zoom: 1.3; }
+  .sec { break-before: auto; margin-top: .55in; }
+  h2 { scroll-margin-top: 16px; }
+  a { color: inherit; text-decoration-thickness: .6pt; text-underline-offset: 2px; }
+  a:focus-visible, summary:focus-visible { outline: 1.5pt solid var(--ink, #111111); outline-offset: 2pt; }
+}
+@media screen and (max-width: 640px) {
+  .fg-doc { zoom: 1.12; padding: 18px 14px 64px; }
+  .tour-head h1 { font-size: 27pt; }
+  .hop { grid-template-columns: 1fr; }
+  .hop .num { margin-bottom: 2pt; }
+  .two, .selfcheck .boxes { grid-template-columns: 1fr; }
+  .key dl { grid-template-columns: 1fr; }
+  .cast td:first-child { width: auto; }
+  .scroll > table { min-width: 0; }
+  td code { overflow-wrap: anywhere; }
+  .map { overflow-x: auto; }
+  .map svg { min-width: 5.6in; }
+}
