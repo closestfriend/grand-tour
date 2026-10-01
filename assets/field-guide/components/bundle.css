@@ -1,0 +1,137 @@
+/* Grand Tour Field Guide: canonical print stylesheet.
+   Put class="fg-doc" on <body> and load fonts.css first. Every colour and size falls back to a literal value,
+   so this file works standalone.
+   Page size: US Letter. Print to PDF with backgrounds on (Chromium page.pdf print_background=True).
+   Mechanics that are NOT CSS (see ../README.md): two-pass page refs, two Explain-hows per page, rasterized check. */
+@page {
+  size: Letter;
+  margin: 0.6in 0.78in 0.66in 0.78in;
+  @top-left { content: "THE GRAND TOUR · FIELD GUIDE"; /* override per booklet: "THE GRAND TOUR · <repo> · FIELD GUIDE" */ font: 7.5pt var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); letter-spacing: .12em; color: var(--ink-muted, #555555); }
+  @top-right { content: ""; /* override per booklet: the print date, e.g. "28 SEP 2026" */ font: 7.5pt var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); letter-spacing: .12em; color: var(--ink-muted, #555555); }
+  @bottom-center { content: counter(page); font: 9pt var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); color: var(--ink-2, #222222); }
+}
+@page :first { @top-left { content: none; } @top-right { content: none; } @bottom-center { content: none; } }
+
+* { box-sizing: border-box; }
+
+.fg-doc {
+  margin: 0; color: var(--ink, #111111); background: var(--paper, #ffffff);
+  font: 10.4pt/1.42 var(--font-body, "Charter", "Bitstream Charter", Georgia, serif);
+  hyphens: auto; -webkit-hyphens: auto;
+  orphans: 3; widows: 3;
+}
+@media screen {
+  .fg-doc { max-width: 7in; margin: 32px auto; padding: 0 16px; }
+  .page-break { border-top: 1px dashed var(--rule-hair, #c8c8c8); margin: 40px 0; }
+}
+.sec { break-before: page; }
+h1, h2, h3, h4 { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-weight: 700; line-height: 1.15; margin: 0; }
+h2 { font-size: 19pt; letter-spacing: .01em; margin: 0 0 .15in; padding-bottom: 6pt; border-bottom: 2pt solid var(--ink, #111111); display: flex; justify-content: space-between; align-items: baseline; }
+h2 .no { font-size: 10pt; letter-spacing: .14em; color: var(--ink-muted, #555555); font-weight: 400; }
+h3 { font-size: 12.5pt; margin: .2in 0 .06in; }
+h4 { font-size: 10pt; letter-spacing: .1em; text-transform: uppercase; margin: .14in 0 .04in; color: var(--ink-2, #222222); }
+p { margin: 0 0 .09in; }
+.lede { font-size: 11.2pt; line-height: 1.45; }
+code, pre, .mono { font-family: var(--font-mono, "DejaVu Sans Mono", Menlo, monospace); font-size: 8.3pt; }
+p code, li code, td code, .callout code { font-size: 8.4pt; background: var(--wash, #f2f2f2); padding: 0 2pt; border-radius: 2pt; }
+pre { white-space: pre-wrap; border: .6pt solid var(--rule-hair, #c8c8c8); border-left: 2.2pt solid var(--ink, #111111); padding: 6pt 8pt; margin: .06in 0 .1in; line-height: 1.34; break-inside: avoid; }
+pre .cap { display: block; font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 7.5pt; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-muted, #555555); margin-bottom: 2pt; }
+ul, ol { margin: 0 0 .09in; padding-left: .22in; }
+li { margin: 0 0 .03in; }
+table { border-collapse: collapse; width: 100%; margin: .06in 0 .12in; font-size: 9.2pt; break-inside: avoid; }
+th { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); text-align: left; font-size: 8.2pt; letter-spacing: .1em; text-transform: uppercase; border-bottom: 1.2pt solid var(--ink, #111111); padding: 3pt 6pt 3pt 0; }
+td { border-bottom: .5pt solid var(--rule-hair, #c8c8c8); padding: 3.5pt 6pt 3.5pt 0; vertical-align: top; }
+.callout { border-left: 2.2pt solid var(--ink, #111111); padding: 3pt 0 3pt 10pt; margin: .1in 0 .12in; break-inside: avoid; }
+.callout .tag, .kicker { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 7.8pt; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 1pt; }
+.callout.soft { border-left: 1.2pt dashed var(--ink, #111111); }
+.small { font-size: 9pt; }
+.muted { color: var(--ink-muted, #555555); }
+.pref { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 8.8pt; letter-spacing: .04em; white-space: nowrap; }
+.badge { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 7.4pt; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; padding: .5pt 4pt; border: 1pt solid var(--ink, #111111); white-space: nowrap; vertical-align: 1pt; }
+.badge.sus { border-style: dashed; }
+.badge.inv { background: var(--ink, #111111); color: var(--paper, #ffffff); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: .22in; }
+.keep { break-inside: avoid; }
+
+/* cover */
+.cover { height: 9.2in; display: flex; flex-direction: column; justify-content: space-between; }
+.cover .top { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); letter-spacing: .3em; font-size: 9pt; text-transform: uppercase; border-bottom: 1pt solid var(--ink, #111111); padding-bottom: 6pt; display: flex; justify-content: space-between; }
+.cover h1 { font-size: 64pt; letter-spacing: -.01em; line-height: .95; margin-top: .3in; }
+.cover .sub { font: italic 15pt/1.35 var(--font-body, "Charter", "Bitstream Charter", Georgia, serif); margin-top: .18in; max-width: 5in; }
+.cover .promise { border: 1.4pt solid var(--ink, #111111); padding: 12pt 16pt; font-size: 11.5pt; max-width: 5.2in; }
+.cover .promise b { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); letter-spacing: .14em; font-size: 8.5pt; text-transform: uppercase; display: block; margin-bottom: 3pt; }
+.cover .meta { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 8.5pt; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-muted, #555555); display: grid; grid-template-columns: repeat(3, 1fr); gap: 4pt 16pt; border-top: 1pt solid var(--ink, #111111); padding-top: 6pt; }
+.cover .meta b { color: var(--ink, #111111); display: block; font-size: 10pt; letter-spacing: .04em; text-transform: none; font-weight: 700; }
+
+/* contents */
+.toc { list-style: none; padding: 0; margin: .1in 0 .2in; }
+.toc li { display: flex; align-items: baseline; gap: 6pt; margin: 0 0 4pt; }
+.toc .n { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 8.5pt; color: var(--ink-muted, #555555); width: .32in; }
+.toc .fill { flex: 1; border-bottom: .8pt dotted var(--rule-soft, #999999); transform: translateY(-3pt); }
+.toc .p { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); }
+.toc .grp { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 8pt; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-muted, #555555); margin: 10pt 0 4pt; }
+
+/* map */
+.map svg { width: 100%; height: auto; display: block; }
+/* Inherited, not forced: an SVG class such as .p or .lab (mono paths) must be able to override it. */
+.map svg { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); }
+
+/* journey */
+.hop { display: grid; grid-template-columns: .34in 1fr; gap: 0 .1in; margin: 0 0 .1in; break-inside: avoid; }
+.hop .num { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-weight: 700; font-size: 15pt; line-height: 1; border-top: 2pt solid var(--ink, #111111); padding-top: 3pt; }
+.hop .where { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 8pt; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted, #555555); }
+.hop h3 { margin: 0 0 2pt; font-size: 11.5pt; }
+
+/* cast */
+.cast td:first-child { width: 1.9in; }
+.cast .blame { font-style: italic; color: var(--ink-2, #222222); }
+
+/* exercises */
+.ex { break-inside: avoid; margin: 0 0 .16in; }
+.ex-head { display: flex; align-items: baseline; gap: 8pt; border-top: 1.4pt solid var(--ink, #111111); padding-top: 3pt; margin-bottom: 2pt; }
+.ex-head .id { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-weight: 700; font-size: 16pt; line-height: 1; }
+.ex-head .kind { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 8pt; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; padding: 1pt 5pt; border: 1pt solid var(--ink, #111111); }
+.ex-head .kind.explain { background: var(--ink, #111111); color: var(--paper, #ffffff); }
+.ex-head .dist { margin-left: auto; font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 8pt; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted, #555555); }
+.brief { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 8.6pt; letter-spacing: .06em; margin: 2pt 0 4pt; }
+.brief b { letter-spacing: .12em; text-transform: uppercase; font-size: 7.8pt; }
+.lines { margin: 2pt 0 4pt; }
+.ln { height: .25in; border-bottom: .6pt solid var(--rule-soft, #999999); }
+.draft-label { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 7.8pt; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; margin-top: 3pt; }
+.selfcheck { border: .8pt dashed var(--ink, #111111); padding: 3pt 7pt; margin: 5pt 0 3pt; font-size: 8.1pt; line-height: 1.3; }
+.selfcheck b { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); letter-spacing: .12em; text-transform: uppercase; font-size: 7.8pt; }
+.selfcheck .boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 1pt 12pt; margin-top: 2pt; }
+.selfcheck .boxes > span::before { content: ""; display: inline-block; width: 7pt; height: 7pt; border: .8pt solid var(--ink, #111111); margin-right: 5pt; vertical-align: -.5pt; }
+
+/* passport */
+.passport { display: grid; grid-template-columns: repeat(4, 1fr); gap: .16in .14in; margin-top: .14in; }
+.stamp { text-align: center; }
+.stamp .ring { width: 1.25in; height: 1.25in; border: 1.4pt dashed var(--ink, #111111); border-radius: 50%; margin: 0 auto 5pt; display: flex; align-items: center; justify-content: center; font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 22pt; font-weight: 700; color: var(--rule-hair, #c8c8c8); }
+.stamp .name { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-weight: 700; font-size: 9.5pt; }
+.stamp .which { font-size: 8.4pt; color: var(--ink-muted, #555555); }
+
+/* divider */
+.divider { break-before: page; height: 9.1in; border: 3pt solid var(--ink, #111111); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: .6in; }
+.divider .big { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 58pt; font-weight: 700; line-height: .95; letter-spacing: .02em; }
+.divider p { font-size: 12.5pt; max-width: 4.6in; margin-top: .25in; }
+.divider .fold { margin-top: .4in; font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 8.5pt; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-muted, #555555); border-top: 1pt dashed var(--ink-muted, #555555); padding-top: 6pt; width: 100%; }
+
+/* key */
+.key { break-inside: avoid; margin: 0 0 .16in; border-top: 1pt solid var(--ink, #111111); padding-top: 4pt; }
+.key .kh { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-weight: 700; font-size: 11pt; margin-bottom: 3pt; }
+.key .kh span { font-weight: 400; color: var(--ink-muted, #555555); font-size: 8.5pt; letter-spacing: .1em; text-transform: uppercase; margin-left: 6pt; }
+.key dl { margin: 0; display: grid; grid-template-columns: 1.02in 1fr; gap: 2pt 10pt; font-size: 9.3pt; line-height: 1.36; }
+.key dt { font-family: var(--font-label, "TeX Gyre Heros Cn", "Arial Narrow", sans-serif); font-size: 7.8pt; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; padding-top: 1.5pt; }
+.key dd { margin: 0; }
+.key dd ul { margin: 0; padding-left: .16in; }
+.key dd li { margin: 0 0 1pt; }
+.stamp-rule { border: 1.4pt solid var(--ink, #111111); padding: 6pt 10pt; margin: .06in 0 .16in; font-size: 9.6pt; }
+
+/* talking points */
+.alt { margin: 0 0 .14in; break-inside: avoid; }
+.alt .kicker { color: var(--ink-muted, #555555); }
+.qa { break-inside: avoid; margin: 0 0 .1in; }
+.qa .q { font-weight: 700; font-style: italic; }
+
+/* component base when rendered outside a booklet (previews) */
+.fg-scope { color: var(--ink, #111111); font: 10.4pt/1.42 var(--font-body, "Charter", "Bitstream Charter", Georgia, serif); }

@@ -1,0 +1,10 @@
+/* Grand Tour Field Guide: @font-face for the three families, with paths relative to this file.
+   Load this before bundle.css. Licenses for the bundled fonts: ../fonts/LICENSES.md */
+@font-face { font-family: "Charter"; font-weight: 400; font-style: normal; src: url("../fonts/Charter-Regular.otf") format("opentype"); }
+@font-face { font-family: "Charter"; font-weight: 400; font-style: italic; src: url("../fonts/Charter-Italic.otf") format("opentype"); }
+@font-face { font-family: "Charter"; font-weight: 700; font-style: normal; src: url("../fonts/Charter-Bold.otf") format("opentype"); }
+@font-face { font-family: "Charter"; font-weight: 700; font-style: italic; src: url("../fonts/Charter-BoldItalic.otf") format("opentype"); }
+@font-face { font-family: "TeX Gyre Heros Cn"; font-weight: 400; src: url("../fonts/TeXGyreHerosCn-Regular.otf") format("opentype"); }
+@font-face { font-family: "TeX Gyre Heros Cn"; font-weight: 700; src: url("../fonts/TeXGyreHerosCn-Bold.otf") format("opentype"); }
+@font-face { font-family: "DejaVu Sans Mono"; font-weight: 400; src: url("../fonts/DejaVuSansMono.ttf") format("truetype"); }
+:root { --font-body: "Charter", "Bitstream Charter", Georgia, serif; --font-label: "TeX Gyre Heros Cn", "Arial Narrow", sans-serif; --font-mono: "DejaVu Sans Mono", Menlo, monospace; }

@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>replicate-predictions-downloader Field Guide</title>
+<link rel="stylesheet" href="../assets/field-guide/components/fonts.css">
+<link rel="stylesheet" href="../assets/field-guide/components/bundle.css">
+<style>
+@page {
+  @top-left { content: "THE GRAND TOUR · replicate-predictions-downloader · FIELD GUIDE"; }
+  @top-right { content: "29 SEP 2026"; }
+}
+</style></head>
+<body class="fg-doc">
+
+<section class="cover"><div>
+  <div class="top"><span>The Grand Tour</span><span>Print Edition</span></div>
+  <h1>replicate-<br>predictions-<br>downloader</h1>
+  <div class="sub">A field guide to the archive run: how your tool walks Replicate's ledger, sends out four porters, and leaves a bookmark for next time.</div></div>
+  <div class="promise"><b>The promise</b>By the last exercise you should be able to explain how this tool works, step by step, to an artist who uses it or an engineer pairing with you on it, in your own words and without opening the code.</div>
+  <div><div class="meta"><div>Repository<b>closestfriend/replicate-predictions-downloader</b></div><div>Version toured<b>2.1.0 · 45 commits</b></div><div>Printed<b>29 September 2026</b></div><div>Source<b>index.js, 746 lines</b></div><div>Tests<b>14, all passing</b></div><div>Sitting<b>45–60 minutes, one pen</b></div></div></div>
+</section>
+
+<section class="sec">
+<h2>How to use this booklet <span class="no">00</span></h2>
+<p class="lede">A walk through the code you wrote, in the order it runs. Read the guide once, then do the exercises without flipping back. The four <b>Explain how</b> exercises are the point: each gives you a listener and a budget and asks what the code <em>does</em>. Draft, self-check, redraft, then the key.</p>
+<ol class="toc"><li class="grp">The Guide</li><li><span class="n">01</span>What You Built<span class="fill"></span><span class="p">2</span></li><li><span class="n">02</span>The Map, and where things live<span class="fill"></span><span class="p">3</span></li><li><span class="n">03</span>Follow One Run: one weekly --last-run<span class="fill"></span><span class="p">4</span></li><li><span class="n">04</span>The Parts: what goes in, what comes out<span class="fill"></span><span class="p">7</span></li><li><span class="n">05</span>Proper Names<span class="fill"></span><span class="p">8</span></li><li><span class="n">06</span>Loose Ends, and where you'd go next<span class="fill"></span><span class="p">8</span></li><li class="grp">The Work</li><li><span class="n">07</span>Field Exercises (8)<span class="fill"></span><span class="p">9</span></li><li class="grp">Behind the stop sign</li><li><span class="n">08</span>Answer Key<span class="fill"></span><span class="p">13</span></li><li><span class="n">09</span>Talking Points (read after you've drafted)<span class="fill"></span><span class="p">14</span></li><li><span class="n">10</span>Passport, and Bring It Back<span class="fill"></span><span class="p">15</span></li></ol>
+<p class="small muted">The key gives <b>ingredients, not the dish</b>: what a good answer contains, never a paragraph to memorize. In Loose Ends, <span class="badge inv">confirmed</span> means reproduced or plainly visible in the code, and <span class="badge sus">suspected</span> means reasoned but not reproduced.</p>
+<h2 style="margin-top:.16in">What You Built <span class="no">01</span></h2>
+<p>You built a command-line tool that copies everything you've made on Replicate onto your own disk. It asks Replicate's API for your prediction history, one page at a time, saves the whole history as a JSON file, then downloads every output file of every successful prediction into a folder per model and zips each folder. Run it with <code>--last-run</code> and it only fetches what's new since the last complete run.</p>
+<p>Replicate deletes data from API-made predictions after about an hour; website predictions are kept. Your tool is the copy that stays.</p>
+<div class="callout soft"><span class="tag">The stack, in plain English</span>One Node.js file (<code>index.js</code>), run with <code>npx replicate-downloader</code>. Three dependencies: <code>commander</code> reads the flags, <code>dotenv</code> loads your token from a <code>.env</code> file, <code>archiver</code> makes the zips. Everything else, including the HTTP calls, uses what Node 18+ already has: <code>fetch</code> and streams.</div>
+<p><b>The metaphor: the archive run.</b> You send an archivist into a gallery that throws work away. They copy the <b>ledger</b> page by page and write an <b>index</b> of everything in it. Four <b>porters</b> carry the pieces home into <b>drawers</b>, one per model, and box each drawer. On the way out, the archivist leaves a <b>bookmark</b> so next week's run knows where to start.</p>
+<p class="small"><b>Where the metaphor breaks:</b> a bookmark marks a page; yours marks a <em>moment</em>, the time the last complete run started. Nothing records which files you already have.</p>
+
+</section>
+
+<section class="sec"><h2>The Map <span class="no">02</span></h2>
+<p class="small muted" style="margin-top:-6pt">Hatched boxes are outside the tool. Solid arrows are requests or writes; dashed arrows are replies or reads. Every path is real.</p>
+<div class="map">
+<svg viewBox="0 0 680 356" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Map of replicate-predictions-downloader: the Ledger (fetchAllPredictions) pages through the Replicate API and hands allPredictions to the Porters (downloadAndOrganizeOutputs), who fetch files from the output host into by-model folders and zips. run() writes the metadata index and the bookmark state file, which the Ledger reads on --last-run.">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#111"/></marker>
+    <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#bbb" stroke-width="1.2"/></pattern>
+  </defs>
+  <style>
+    .box { fill: #fff; stroke: #111; stroke-width: 1.4; }
+    .ext { fill: url(#hatch); stroke: #111; stroke-width: 1.2; stroke-dasharray: 5 3; }
+    .t { font-size: 13.5px; font-weight: 700; fill: #111; }
+    .p { font-family: 'DejaVu Sans Mono', monospace; font-size: 9.6px; fill: #111; }
+    .s { font-size: 10.5px; fill: #444; }
+    .a { stroke: #111; stroke-width: 1.3; fill: none; marker-end: url(#ah); }
+    .ad { stroke: #111; stroke-width: 1.1; fill: none; stroke-dasharray: 4 3; marker-end: url(#ah); }
+    .lab { font-family: 'DejaVu Sans Mono', monospace; font-size: 8.8px; fill: #111; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+    .zone { font-size: 9.5px; letter-spacing: 2px; fill: #666; paint-order: stroke; stroke: #fff; stroke-width: 5px; stroke-linejoin: round; }
+  </style>
+  <line x1="4" y1="112" x2="676" y2="112" stroke="#999" stroke-dasharray="2 4"/>
+  <line x1="4" y1="240" x2="676" y2="240" stroke="#999" stroke-dasharray="2 4"/>
+
+  <rect class="ext" x="20" y="28" width="280" height="64"/>
+  <text class="t" x="30" y="48">Replicate API</text>
+  <text class="p" x="30" y="66">api.replicate.com/v1/predictions</text>
+  <text class="s" x="30" y="82">your prediction history, in pages</text>
+
+  <rect class="ext" x="430" y="28" width="230" height="64"/>
+  <text class="t" x="440" y="48">Output file host</text>
+  <text class="p" x="440" y="66">the URLs in prediction.output</text>
+  <text class="s" x="440" y="82">images, audio, video, text files</text>
+
+  <rect class="box" x="20" y="134" width="230" height="80"/>
+  <text class="t" x="30" y="154">The Ledger</text>
+  <text class="p" x="30" y="172">fetchAllPredictions()</text>
+  <text class="p" x="30" y="186">makeRequest() · 200 ms pause</text>
+  <text class="s" x="30" y="203">pages until next is null</text>
+
+  <rect class="box" x="430" y="134" width="230" height="80"/>
+  <text class="t" x="440" y="154">The Porters</text>
+  <text class="p" x="440" y="172">downloadAndOrganizeOutputs()</text>
+  <text class="p" x="440" y="186">4 workers → downloadFile()</text>
+  <text class="s" x="440" y="203">stream each file to disk</text>
+
+  <rect class="box" x="20" y="262" width="200" height="80"/>
+  <text class="t" x="30" y="282">The Bookmark</text>
+  <text class="p" x="30" y="300">.replicate-downloader-</text>
+  <text class="p" x="30" y="313">state.json</text>
+  <text class="s" x="30" y="330">{ lastSuccessfulRun }</text>
+
+  <rect class="box" x="250" y="262" width="180" height="80"/>
+  <text class="t" x="260" y="282">The Index</text>
+  <text class="p" x="260" y="300">replicate_metadata_</text>
+  <text class="p" x="260" y="313">DATE.json</text>
+  <text class="s" x="260" y="330">every prediction, raw</text>
+
+  <rect class="box" x="460" y="262" width="200" height="80"/>
+  <text class="t" x="470" y="282">The Drawers</text>
+  <text class="p" x="470" y="300">replicate_outputs_DATE/</text>
+  <text class="p" x="470" y="313">by-model/&lt;model&gt;/ + .zip</text>
+  <text class="s" x="470" y="330">one file per output URL</text>
+
+  <path class="a" d="M180 134 V96"/>
+  <path class="ad" d="M230 92 V130"/>
+  <path class="a" d="M500 134 V96"/>
+  <path class="ad" d="M600 92 V130"/>
+  <path class="a" d="M250 164 H426"/>
+  <path class="a" d="M340 164 V258"/>
+  <path class="ad" d="M110 262 V218"/>
+  <path class="a" d="M170 214 V258"/>
+  <path class="a" d="M560 214 V258"/>
+
+  <text class="lab" x="174" y="114" text-anchor="end">GET + Bearer</text>
+  <text class="lab" x="236" y="114">results[] · next</text>
+  <text class="lab" x="494" y="114" text-anchor="end">GET url</text>
+  <text class="lab" x="606" y="114">bytes</text>
+  <text class="lab" x="338" y="158" text-anchor="middle">allPredictions[]</text>
+  <text class="lab" x="346" y="206">buildMetadata()</text>
+  <text class="lab" x="116" y="232">reads</text>
+  <text class="lab" x="176" y="232">run() writes</text>
+  <text class="lab" x="566" y="232">pipeline()</text>
+  <text class="zone" x="4" y="14">OUTSIDE (NOT YOURS)</text>
+  <text class="zone" x="340" y="130" text-anchor="middle">INSIDE THE TOOL · index.js</text>
+  <text class="zone" x="4" y="254">YOUR DISK</text>
+</svg>
+</div>
+<h3 style="margin-top:.1in">Where things live</h3>
+<table>
+<tr><th>Thing</th><th>Where</th><th>Lasts</th></tr>
+<tr><td>Your API token</td><td><code>REPLICATE_API_TOKEN</code>, from the shell or <code>.env</code></td><td>Until you change it. Never written anywhere by the tool</td></tr>
+<tr><td>The list of predictions</td><td><code>this.allPredictions</code>, in memory</td><td>One run</td></tr>
+<tr><td>The index</td><td><code>replicate_metadata_YYYY-MM-DD.json</code> in the folder you ran it from</td><td>On disk. A second run the same day overwrites it</td></tr>
+<tr><td>The files</td><td><code>replicate_outputs_YYYY-MM-DD/by-model/&lt;model&gt;/</code> and <code>&lt;model&gt;.zip</code> beside each folder</td><td>On disk</td></tr>
+<tr><td>The bookmark</td><td><code>.replicate-downloader-state.json</code>, same folder</td><td>Until the next complete run replaces it</td></tr>
+<tr><td>Knobs (delay, concurrency, zips)</td><td>The <code>CONFIG</code> object at the top of <code>index.js</code></td><td>Change them by editing the file</td></tr>
+</table>
+<p class="small">All of these land in your <em>current directory</em>, so where you run the command is where the archive goes. <code>.gitignore</code> already excludes the outputs, the index and the bookmark.</p>
+</section>
+<section class="sec"><h2>Follow One Run <span class="no">03</span></h2><p class="lede">It's Sunday. You open a terminal in your archive folder and run <code>npx replicate-downloader --last-run</code>. Last Sunday's run finished cleanly. Since then you made one image set on the website: two images from <code>flux-dev</code>, prompt <em>“a lighthouse in fog, risograph”</em>. Here is everything that happens.</p><div class="hop"><div class="num">1</div><div><div class="where">index.js · main()</div><h3>Read the token and the flags</h3><p>Before <code>main()</code> runs, <code>dotenv.config()</code> copies <code>.env</code> into <code>process.env</code>, and <code>commander</code> parses your flags into <code>options</code>. <code>main()</code> checks three things: the token is set (otherwise it prints how to set it and stops), <code>--last-run</code> isn't combined with <code>--since</code> or <code>--until</code>, and <code>--source</code> is <code>web</code> or <code>api</code>. Then it builds <code>new ReplicateDownloader(token, { lastRun: true })</code> and calls <code>run()</code>.</p></div></div><div class="hop"><div class="num">2</div><div><div class="where">getDateFilterParams() · loadState() · parseDate()</div><h3>Open the bookmark, turn it into a query</h3><p>Because <code>lastRun</code> is set, the ledger reads <code>.replicate-downloader-state.json</code> and finds <code>lastSuccessfulRun: "2026-09-20T18:04:11.532Z"</code>. <code>parseDate</code> normalises it to ISO. Then one second is subtracted:</p><pre><code>const sinceBuffer = new Date(new Date(parsedSince).getTime() - 1000);
+params.append('created_after', sinceBuffer.toISOString());</code></pre><p>The result is a query string: <code>created_after=2026-09-20T18:04:10.532Z</code>. That second of overlap means a prediction created at exactly the bookmark's instant is fetched, not lost. <code>getDateFilterBounds()</code> computes the same bound again, for the check in hop 4.</p></div></div><div class="hop"><div class="num">3</div><div><div class="where">fetchAllPredictions() · makeRequest()</div><h3>Copy the ledger, page by page</h3><p>First it stamps <code>this.fetchStartTime</code> with the current time. That becomes next week's bookmark. Then it loops (simplified):</p><pre><code>while (nextUrl) {
+    const response = await this.makeRequest(nextUrl);
+    this.allPredictions.push(...response.results);
+    nextUrl = response.next;          // a cursor URL, or null on the last page
+    await new Promise(r =&gt; setTimeout(r, CONFIG.requestDelay));  // 200 ms
+}</code></pre><p><code>makeRequest</code> sends <code>Authorization: Bearer &lt;token&gt;</code> and a <code>User-Agent</code> with the version. A non-OK status becomes a thrown <code>Error</code> carrying Replicate's <code>detail</code> message. Three details sit around that core loop. If the <code>next</code> URL has lost the date filter, the filter is appended again. If every prediction on a page is older than the bound, it stops early. And if any request throws, it logs the error and <code>break</code>s, leaving <code>fetchComplete</code> false. This week there is one page, with your one prediction.</p></div></div><div class="hop"><div class="num">4</div><div><div class="where">fetchAllPredictions(), after the loop</div><h3>Check the dates again, on your side</h3><p>The server has already filtered by date, but the ledger filters once more: anything with <code>created_at</code> before the bound or after <code>--until</code> is dropped. A prediction with no <code>created_at</code> is kept. Dates are compared as ISO strings, which sort the same way as the times they name.</p></div></div><div class="hop"><div class="num">5</div><div><div class="where">saveEnhancedMetadata() · buildMetadata()</div><h3>Write the index</h3><p>Every prediction is grouped by model name. <code>extractModelName</code> takes the last part of <code>prediction.model</code> (<code>black-forest-labs/flux-dev</code> → <code>flux-dev</code>), falling back to <code>version.model</code>, then the <code>urls.get</code> path, then <code>unknown-model</code>. Statuses are counted under their real API names. The file looks like this:</p><pre><code>{ "exported_at": "2026-09-27T17:30:02.118Z", "total_predictions": 1,
+  "model_stats": { "flux-dev": { "total": 1, "succeeded": 1, "failed": 0, "canceled": 0 } },
+  "predictions_by_model": { "flux-dev": [ { "id": "q7x2m4ab…", "prompt_summary":
+      "a-lighthouse-in-fog-risograph", "has_output": true, … } ] },
+  "raw_predictions": [ …every field Replicate returned… ] }</code></pre><p>Failed and canceled predictions are in here too, and so is the output of models that return <em>text</em> rather than file URLs. The index is the only place that text is saved.</p></div></div><div class="hop"><div class="num">6</div><div><div class="where">downloadAndOrganizeOutputs() · extractOutputUrls()</div><h3>Turn predictions into a job list</h3><p>Only predictions with <code>status === 'succeeded'</code> and an <code>output</code> go forward. For each one, the model's folder is created, then <code>extractOutputUrls</code> walks the output, whatever its shape:</p><pre><code>const collect = (value) =&gt; {
+    if (typeof value === 'string') { if (value.startsWith('http')) urls.push(value); }
+    else if (Array.isArray(value)) value.forEach(collect);
+    else if (value &amp;&amp; typeof value === 'object') Object.values(value).forEach(collect);
+};</code></pre><p>Your output is <code>{ images: [url1, url2] }</code>, so you get two jobs: <code>{ url, prediction, modelName: 'flux-dev', modelDir, fileIndex: 0 }</code> and the same with <code>fileIndex: 1</code>.</p></div></div><div class="hop"><div class="num">7</div><div><div class="where">the worker pool · generateFilename() · downloadFile()</div><h3>Four porters, one shared list</h3><p>The pool is four async functions reading the same counter (simplified):</p><pre><code>const worker = async () =&gt; {
+    while (nextJob &lt; jobs.length) {
+        const job = jobs[nextJob++];
+        try { await this.downloadFile(job.url, job.modelDir, baseName); … }
+        catch (e) { totalErrors++; }        // log it, take the next job
+    }
+};
+await Promise.all(Array.from({ length: Math.min(4, jobs.length) }, worker));</code></pre><p>Each worker waits for its own download before taking another job, so at most four files are ever in flight. Taking a job (<code>jobs[nextJob++]</code>) happens with no <code>await</code> in the middle, and Node runs one piece of JavaScript at a time, so two workers can never take the same job. Here only two workers start, because there are only two jobs.</p><p>The name comes from <code>generateFilename</code>: date, model, prompt slug, the first eight characters of the ID, and <code>_2</code> for the second file. <code>2026-09-24_flux-dev_a-lighthouse-in-fog-risograph_q7x2m4ab</code>. The extension is added in <code>downloadFile</code>: from the URL if it has a sane one, else from the <code>Content-Type</code> header (<code>image/jpeg</code> → <code>jpg</code>), else <code>bin</code>. The body is streamed to disk with <code>pipeline()</code>, counting bytes as they pass. A bad status throws before any file is opened. A stream failure deletes the half-written file.</p></div></div><div class="hop"><div class="num">8</div><div><div class="where">createModelZip() · run()</div><h3>Box the drawers, leave the bookmark</h3><p>Each model folder is zipped with <code>archiver</code> at level 9, as <code>by-model/flux-dev.zip</code>. <code>run()</code> prints a summary (files, errors, size per model, status counts). Last, it writes the bookmark, but only under two conditions:</p><pre><code>if (this.fetchComplete &amp;&amp; successful &gt; 0) {
+    this.saveState({ lastSuccessfulRun: this.fetchStartTime, … });
+}</code></pre><p>The new bookmark is the moment hop 3 <em>started</em>. Anything you create while the run is going is newer than that, so next Sunday picks it up. And if the ledger broke off halfway, the old bookmark stays, so next Sunday re-covers the gap.</p></div></div></section>
+<section class="sec"><h2>The Parts <span class="no">04</span></h2>
+<p>The whole tool is one class, <code>ReplicateDownloader</code>, plus a small CLI wrapper, in <code>index.js</code>. Here are its methods in the order a run uses them, by what goes in and what comes out.</p>
+<table class="cast">
+<tr><th>Method</th><th>In → out · and what to check when it misbehaves</th></tr>
+<tr><td><code>main()</code></td><td>flags and env → a configured downloader, or a printed error.<br><span class="blame">Check here when a flag is rejected or the token isn't found.</span></td></tr>
+<tr><td><code>loadState()</code> / <code>saveState()</code></td><td>the bookmark file ↔ <code>{ lastSuccessfulRun }</code>. Read errors become a warning and an empty state.</td></tr>
+<tr><td><code>parseDate()</code></td><td><code>"yesterday"</code>, <code>"3 weeks ago"</code>, or anything <code>new Date()</code> accepts → ISO string. A month is 30 days, a year 365.<br><span class="blame">Check here when a date range is off by a day.</span></td></tr>
+<tr><td><code>getDateFilterParams()</code> / <code>getDateFilterBounds()</code></td><td>options + bookmark → the query string for the server, and the same bounds for the client-side check.</td></tr>
+<tr><td><code>makeRequest()</code></td><td>URL → parsed JSON, or a thrown error with status and <code>detail</code>.</td></tr>
+<tr><td><code>fetchAllPredictions()</code></td><td>→ <code>this.allPredictions</code>, <code>fetchStartTime</code>, <code>fetchComplete</code>.<br><span class="blame">Check here when a run fetches too much, too little, or stops early.</span></td></tr>
+<tr><td><code>extractModelName()</code> · <code>extractPromptInfo()</code> · <code>sanitizeFilename()</code></td><td>prediction → <code>flux-dev</code> · first prompt-like input → a lowercase, hyphenated slug of at most 50 characters (or <code>no-prompt</code>).</td></tr>
+<tr><td><code>buildMetadata()</code></td><td><code>allPredictions</code> → the index object, grouped by model with status counts.</td></tr>
+<tr><td><code>extractOutputUrls()</code></td><td>any output shape → a flat list of <code>http…</code> strings.<br><span class="blame">Check here when a prediction has output but no file appears.</span></td></tr>
+<tr><td><code>downloadAndOrganizeOutputs()</code></td><td>successful predictions → folders, jobs, the four-worker pool, zips, counts.</td></tr>
+<tr><td><code>downloadFile()</code></td><td>URL + folder + base name → <code>{ filepath, size }</code>, or a thrown error and no file.<br><span class="blame">Check here for wrong extensions or failed downloads.</span></td></tr>
+<tr><td><code>run()</code></td><td>the whole sequence, the summary, and the bookmark write.</td></tr>
+</table>
+<h3>Around it</h3>
+<ul>
+<li><code>test/unit.test.js</code>: 14 tests with <code>node:test</code>. Most start a tiny local HTTP server that plays Replicate, point <code>baseUrl</code> at it, and check real behaviour: Bearer auth, the watermark, at most four downloads in flight. Run with <code>npm test</code>.</li>
+<li><code>example.js</code>: five ways to use the class as a library, each with its <code>run()</code> commented out.</li>
+<li><code>package.json</code>: two command names (<code>replicate-downloader</code>, <code>replicate-predictions-downloader</code>) pointing at <code>index.js</code>, and Node 18 or newer.</li>
+<li>Outside the tool: Replicate's API, the output host (plain HTTPS, no token sent), and a Python port in a separate repo.</li>
+</ul>
+</section>
+<section class="sec"><h2>Proper Names <span class="no">05</span></h2>
+<p>You built these by instinct. Here is what other engineers call them.</p>
+<table>
+<tr><th>What your code does</th><th>It's called</th><th>Where</th></tr>
+<tr><td>Follows the <code>next</code> URL until it's null</td><td><b>Cursor pagination</b></td><td><code>fetchAllPredictions</code></td></tr>
+<tr><td>Remembers <em>when</em> it last finished, not <em>what</em> it has; one second of overlap</td><td><b>High-water mark</b> for an <b>incremental sync</b>, with an <b>overlap window</b></td><td>the bookmark</td></tr>
+<tr><td>Filters on the server, then checks again locally</td><td><b>Defense in depth</b> (belt and braces)</td><td>hops 2 and 4</td></tr>
+<tr><td>Four workers pulling from one list</td><td><b>Worker pool</b> with <b>bounded concurrency</b></td><td><code>downloadAndOrganizeOutputs</code></td></tr>
+<tr><td>Writes bytes as they arrive, never the whole file in memory</td><td><b>Streaming</b>; <code>pipeline()</code> handles <b>backpressure</b></td><td><code>downloadFile</code></td></tr>
+<tr><td>Prompt → lowercase, hyphens, 50 characters</td><td>A <b>slug</b></td><td><code>sanitizeFilename</code></td></tr>
+<tr><td>Only moves the bookmark after a complete fetch</td><td><b>Commit only on success</b></td><td><code>run()</code></td></tr>
+</table>
+
+<h2 style="margin-top:.2in">Loose Ends <span class="no">06</span></h2>
+<p>What the code does today that you'll probably want to change. None of it loses data.</p>
+<ul>
+<li><span class="badge inv">confirmed</span> <b>A date-only <code>--until</code> leaves out that day.</b> <code>"2024-01-31"</code> parses to midnight at the <em>start</em> of the 31st (UTC), so the README's January example stops at the 30th. Fix: when <code>--until</code> has no time, add a day.</li>
+<li><span class="badge inv">confirmed</span> <b>Text outputs get an empty drawer.</b> A language model's output is a list of strings, not URLs, so no files are downloaded. The model's folder is still created, and zipped empty. The text is safe in the index.</li>
+<li><span class="badge inv">confirmed</span> <b>Settings the code never reads.</b> <code>.env.example</code> lists five options (<code>REQUEST_DELAY</code> and others), and <code>CONFIG.enhancedMetadata</code> exists, but only the token is read from the environment. The README also draws the zips one level higher than where they land.</li>
+<li><span class="badge inv">confirmed</span> <b>Exit code 0 on a missing token or a crash.</b> Scripts running it on a schedule can't tell those apart from success. A run whose fetch fails outright <em>does</em> exit 1.</li>
+</ul>
+<h3>Where you'd go next</h3>
+<ul>
+<li>Save text outputs as <code>.txt</code> → a branch in <code>downloadAndOrganizeOutputs</code> for predictions whose <code>extractOutputUrls</code> list is empty.</li>
+<li>Skip files already on disk → a check before <code>downloadFile</code> in the worker.</li>
+<li>Retries → around <code>await this.downloadFile(…)</code> in the worker. From here, <code>explain-diff</code> covers each change.</li>
+</ul>
+</section>
+
+<section class="sec"><h2>Field Exercises <span class="no">07</span></h2>
+<p>Eight exercises. The first four have right answers. The last four are <b>Explain how</b>, friendliest listener first. Draft, self-check, redraft, and only then the key.</p>
+<div class="ex"><div class="ex-head"><span class="id">01</span><span class="kind">Find it</span><span class="dist">The Drawers</span></div><p>An output was saved as <code>…_q7x2m4ab.bin</code>. Which function chose <code>.bin</code>, what two things did it try first, and which function built the rest of the name?</p><div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div></div><div class="ex"><div class="ex-head"><span class="id">02</span><span class="kind">Predict it</span><span class="dist">The Ledger</span></div><p>You run <code>--since "2 days ago"</code> at exactly noon UTC on 10 March. What query parameter and value go to the API, and what happens to a page where every prediction is older than that?</p><div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div></div><div class="ex"><div class="ex-head"><span class="id">03</span><span class="kind">Predict it</span><span class="dist">The Bookmark</span></div><p>A <code>--last-run</code> fetch gets pages 1 and 2, then page 3 returns a 500. What gets downloaded, what happens to the bookmark, and where does next week's run start?</p><div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div></div><div class="ex"><div class="ex-head"><span class="id">04</span><span class="kind">Trace it</span><span class="dist">The Porters</span></div><p>Ten jobs, four workers. Job 6's URL returns 404. Trace what happens to job 6, to the worker that took it, and to the other jobs.</p><div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div></div><div class="ex"><div class="ex-head"><span class="id">05</span><span class="kind explain">Explain how</span><span class="dist">The Drawers</span></div><div class="brief"><b>Listener</b> An artist who uses Replicate's website &nbsp;·&nbsp; <b>Budget</b> Three sentences</div><p>“If I run this tonight, what exactly ends up on my computer, and how are the files named?”</p><div class="draft-label">Draft 1</div><div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div><div class="selfcheck"><b>Self-check before Draft 2</b><div class="boxes"><span>Said what happens, in order, not only what it's for</span><span>Circled every hedge (“kind of,” “basically,” “sort of”)</span><span>Used the proper name, if one exists (<span class="pref">p.&nbsp;8</span>)</span><span>Pitched at <em>this</em> listener</span></div></div><div class="draft-label">Draft 2 — before you turn to the key</div><div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div></div><div class="ex"><div class="ex-head"><span class="id">06</span><span class="kind explain">Explain how</span><span class="dist">The Bookmark</span></div><div class="brief"><b>Listener</b> A friend who'll run it every week &nbsp;·&nbsp; <b>Budget</b> Four sentences</div><p>“How does it know what's new since last time? And what if my wifi drops halfway?”</p><div class="draft-label">Draft 1</div><div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div><div class="selfcheck"><b>Self-check before Draft 2</b><div class="boxes"><span>Said what happens, in order, not only what it's for</span><span>Circled every hedge (“kind of,” “basically,” “sort of”)</span><span>Used the proper name, if one exists (<span class="pref">p.&nbsp;8</span>)</span><span>Pitched at <em>this</em> listener</span></div></div><div class="draft-label">Draft 2 — before you turn to the key</div><div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div></div><div class="ex"><div class="ex-head"><span class="id">07</span><span class="kind explain">Explain how</span><span class="dist">The Ledger</span></div><div class="brief"><b>Listener</b> An engineer pairing with you &nbsp;·&nbsp; <b>Budget</b> Four sentences</div><p>“Walk me through how you get the full list of predictions, with date filters, from the API.”</p><div class="draft-label">Draft 1</div><div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div><div class="selfcheck"><b>Self-check before Draft 2</b><div class="boxes"><span>Said what happens, in order, not only what it's for</span><span>Circled every hedge (“kind of,” “basically,” “sort of”)</span><span>Used the proper name, if one exists (<span class="pref">p.&nbsp;8</span>)</span><span>Pitched at <em>this</em> listener</span></div></div><div class="draft-label">Draft 2 — before you turn to the key</div><div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div></div><div class="ex"><div class="ex-head"><span class="id">08</span><span class="kind explain">Explain how</span><span class="dist">The Porters</span></div><div class="brief"><b>Listener</b> An engineer pairing with you &nbsp;·&nbsp; <b>Budget</b> Four sentences</div><p>“How do downloads run in parallel without firing off hundreds of requests at once?”</p><div class="draft-label">Draft 1</div><div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div><div class="selfcheck"><b>Self-check before Draft 2</b><div class="boxes"><span>Said what happens, in order, not only what it's for</span><span>Circled every hedge (“kind of,” “basically,” “sort of”)</span><span>Used the proper name, if one exists (<span class="pref">p.&nbsp;8</span>)</span><span>Pitched at <em>this</em> listener</span></div></div><div class="draft-label">Draft 2 — before you turn to the key</div><div class="lines"><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div></div>
+</section>
+
+<section class="divider"><div class="big">STOP.</div>
+<p>Finish both drafts of every Explain-how exercise first. The key tells you what a good answer contains, not how to say it. Your words are the ones worth keeping.</p>
+<div class="fold">Fold or tear here · Answer key &amp; talking points behind</div></section>
+
+<section class="sec"><h2>Answer Key <span class="no">08</span></h2>
+<div class="stamp-rule"><b>Stamp rule.</b> Explain-how answers: Draft 2 hits every must-hit point (your wording, any order) and none of the traps. The first four: the “stamp if” line.</div>
+<div class="key"><div class="kh">01 · Find it<span>The Drawers</span></div><dl><dt>Answer</dt><dd><code>downloadFile()</code> picks the extension: first <code>extensionFromUrl()</code> (the URL's last path segment), then <code>extensionFromContentType()</code> (the response header), and <code>bin</code> only if both give nothing (e.g. <code>application/octet-stream</code>). The base name comes from <code>generateFilename()</code>.</dd><dt>Stamp if</dt><dd>Both fallbacks, in order, and <code>generateFilename</code>.</dd></dl></div><div class="key"><div class="kh">02 · Predict it<span>The Ledger</span></div><dl><dt>Answer</dt><dd><code>created_after=2026-03-08T11:59:59.000Z</code> (two days back, minus the one-second overlap; the exact milliseconds depend on the clock). If a whole page is older than the bound, pagination stops early and the client-side filter drops those predictions.</dd><dt>Stamp if</dt><dd>The parameter name, the minus-one-second, and the early stop.</dd></dl></div><div class="key"><div class="kh">03 · Predict it<span>The Bookmark</span></div><dl><dt>Answer</dt><dd>The loop logs the error and breaks; <code>fetchComplete</code> stays false. Predictions from pages 1–2 are still indexed and downloaded. The bookmark is <b>not</b> written, so next week starts from the <em>old</em> bookmark and fetches the gap again (re-downloading pages 1–2 is harmless).</dd><dt>Stamp if</dt><dd>Partial download, bookmark untouched, next run starts from the old mark.</dd></dl></div><div class="key"><div class="kh">04 · Trace it<span>The Porters</span></div><dl><dt>Answer</dt><dd>The worker's <code>downloadFile</code> sees <code>!response.ok</code> and throws before opening any file. The worker's <code>catch</code> logs it and adds to <code>totalErrors</code>, then its <code>while</code> loop takes the next job. The other workers never notice. <code>Promise.all</code> resolves when all four run out of jobs; the summary shows 9 downloaded, 1 error.</dd><dt>Stamp if</dt><dd>No file written, error counted, the same worker keeps going.</dd></dl></div><div class="key"><div class="kh">05 · Explain how<span>The Drawers</span></div><dl><dt>Must hit</dt><dd><ul><li>A folder named with today's date, with a subfolder (and a zip) for each model.</li><li>Every file from every successful prediction, named date_model_prompt_id.</li><li>One JSON file listing every prediction, including failed ones and text answers.</li><li>It lands in whatever folder you ran it from.</li></ul></dd><dt>Traps</dt><dd>“It backs up your account” (it's predictions only). Leaving out the JSON, which is where text outputs live.</dd><dt>Altitude</dt><dd>No API words. One example filename beats a description of the pattern.</dd></dl></div><div class="key"><div class="kh">06 · Explain how<span>The Bookmark</span></div><dl><dt>Must hit</dt><dd><ul><li><code>--last-run</code> reads a small file holding one timestamp.</li><li>It asks Replicate only for predictions created after that time (minus a second).</li><li>The timestamp saved is when the run <em>started</em>, so things you make mid-run are caught next time.</li><li>It's only saved if the whole list came through, so a dropped connection means next time starts from the old mark.</li></ul></dd><dt>Proper names</dt><dd>High-water mark · incremental sync.</dd><dt>Traps</dt><dd>“It remembers which files it downloaded” (it stores a time, not a list). “It saves when it finishes” (it saves the start time).</dd><dt>Altitude</dt><dd>Say “a timestamp in a file,” not <code>.replicate-downloader-state.json</code>.</dd></dl></div><div class="key"><div class="kh">07 · Explain how<span>The Ledger</span></div><dl><dt>Must hit</dt><dd><ul><li>GET <code>/v1/predictions</code> with a Bearer token; dates go in as <code>created_after</code> / <code>created_before</code>, plus <code>source</code>.</li><li>Follow the <code>next</code> cursor until it's null, re-adding the filters if the cursor dropped them, with a 200 ms pause.</li><li>Stop early if a whole page is older than the bound, then re-filter locally.</li><li>Any error stops paging and marks the fetch incomplete.</li></ul></dd><dt>Proper names</dt><dd>Cursor pagination · defense in depth.</dd><dt>Traps</dt><dd>“Page numbers” (it's a cursor URL). Skipping what happens on an error.</dd><dt>Altitude</dt><dd>They'll want parameter names. Say them.</dd></dl></div><div class="key"><div class="kh">08 · Explain how<span>The Porters</span></div><dl><dt>Must hit</dt><dd><ul><li>Build a flat list of jobs, one per output URL.</li><li>Start four async workers; each takes the next job from a shared index and awaits it before taking another, so at most four are in flight.</li><li>Taking a job has no <code>await</code> in it, so on Node's single thread two workers can't take the same one.</li><li>Each file streams to disk; a failure is counted and the worker moves on. <code>Promise.all</code> waits for all four.</li></ul></dd><dt>Proper names</dt><dd>Worker pool · bounded concurrency · streaming.</dd><dt>Traps</dt><dd>“Promise.all on every download” (that's unbounded). “Threads.”</dd><dt>Altitude</dt><dd>Mention the test that proves the limit if they ask how you know.</dd></dl></div>
+
+<h2 style="margin-top:.2in">Talking Points <span class="no">09</span></h2>
+<p class="muted small">For when you're stuck, not for reciting. Where your Draft 2 says it better, cross mine out.</p>
+
+<div class="alt"><span class="kicker">One sentence</span>
+<p>I wrote a command-line tool that copies your whole Replicate history, every image, clip and prompt, onto your own disk, and on later runs only fetches what's new.</p></div>
+<div class="alt"><span class="kicker">Thirty seconds · non-technical</span>
+<p>Replicate is where a lot of people run AI image and audio models, and it doesn't keep everything forever. My tool asks it for your whole history, saves a list of everything you've made, then downloads every file into a folder per model with names built from the date and the prompt. Run it again next week and it picks up where it left off.</p></div>
+<div class="alt"><span class="kicker">Two minutes · technical listener</span>
+<p>It's a single Node file with three dependencies. It pages through Replicate's predictions endpoint by following the <code>next</code> cursor, with date filters sent as <code>created_after</code> and <code>created_before</code> and re-checked locally. It writes the history to a JSON index, then flattens every successful output into a list of download jobs. Four async workers pull from that list and stream each file to disk, taking the extension from the URL or the content type. For incremental runs it saves a high-water mark: the time the last <em>complete</em> fetch started. If a fetch breaks off, the mark isn't moved, so nothing is skipped.</p></div>
+<h3>Questions you'll get asked</h3>
+<div class="qa"><p class="q">“Does it need my password?”</p><p>No. It uses an API token you create on Replicate, read from an environment variable or a <code>.env</code> file, and never written anywhere.</p></div>
+<div class="qa"><p class="q">“Will it download the same thing twice?”</p><p>With <code>--last-run</code>, only across an interrupted run, on purpose. Without it, it fetches everything each time.</p></div>
+<div class="qa"><p class="q">“What doesn't it do yet?”</p><p>Text outputs live only in the JSON index, and there's no retry for a failed download. Both are small changes in one function.</p></div>
+
+
+<div class="keep"><h2 style="margin-top:.2in">Passport <span class="no">10</span></h2>
+<p>Stamp a district when an exercise in it meets the stamp rule. Be strict: Grade Mode will check you.</p>
+<div class="passport"><div class="stamp"><div class="ring">A</div><div class="name">The Drawers</div><div class="which">Ex. 01 · 05</div></div><div class="stamp"><div class="ring">B</div><div class="name">The Ledger</div><div class="which">Ex. 02 · 07</div></div><div class="stamp"><div class="ring">C</div><div class="name">The Bookmark</div><div class="which">Ex. 03 · 06</div></div><div class="stamp"><div class="ring">D</div><div class="name">The Porters</div><div class="which">Ex. 04 · 08</div></div></div></div>
+<div class="keep"><h3 style="margin-top:.16in">Bring it back</h3>
+<p>Photograph every exercise page, both drafts, flat and in daylight. Open a chat, invoke <b><code>grand-tour grade</code></b> and attach the photos. It reads your handwriting (and says what it couldn't read), grades each Draft 2 on <b>accurate · fitted · confident</b>, checks your stamps, then builds a talking-points card from <em>your</em> sentences wherever they passed.</p>
+<p class="small muted">Paper travels. This booklet contains no tokens or secrets; the API token appears only by its variable name.</p></div>
+</section>
+</body></html>
