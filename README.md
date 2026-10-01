@@ -10,7 +10,9 @@ Building with an AI often leaves you with a system you understand from the insid
 
 The Grand Tour closes that gap. It reads the whole repo, picks one metaphor that fits its shape, traces one real run through the actual code with toy data, gives you the proper names for patterns you built by instinct, and then makes you say it back, in your own words, until it holds up.
 
-It's written to you, as the person who built the thing. It isn't a code review. Problems get their own section near the end, phrased as things you'll want to change, and every real one is there: security findings and confirmed bugs are never cut to save space.
+It works just as well for onboarding someone to a team's codebase: it reads the git history, notices the visitor didn't write it, and addresses them as the new owner instead of the builder. Nobody has to say which they are.
+
+It's written to you, as the person who built (or now owns) the thing. It isn't a code review. Problems get their own section near the end, phrased as things you'll want to change, and every real one is there: security findings and confirmed bugs are never cut to save space.
 
 ## Three modes
 
